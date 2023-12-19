@@ -5,6 +5,10 @@ import { useRouter } from "next/router";
 import { FiEyeOff, FiEye } from "react-icons/fi";
 import "@/src/styles/tailwind.css";
 import { Layout as DefaultLayout } from "@/src/components/Layout";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/src/store";
+import { login } from "@/src/store/user";
+import { unwrapResult } from "@reduxjs/toolkit";
 
 const Login: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const [email, setEmail] = useState<string>("");
@@ -13,51 +17,28 @@ const Login: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
   const [errorText, setErrorText] = useState<string>("");
+  const dispatch = useDispatch<AppDispatch>();
 
   const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault(); // Prevent the default form submission behavior.
-    console.log("Submitting form", { email, password });
-
+    event.preventDefault();
     try {
-      const response = await fetch("http://127.0.0.1:8000/signup/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          // 'X-CSRFToken': csrfToken // Include this if CSRF is used.
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
-          // Don't send confirmationToken from client-side
-        }),
-      });
+      const actionResult = await dispatch(login({ email, password }));
+      unwrapResult(actionResult);
 
-      const data = await response.json();
-
-      // Check if the request was successful
-      if (response.ok) {
-        console.log("Verification email sent successfully:", data.message);
-
-        router.push({
-          pathname: "/onboarding/verify-email",
-          query: { email: email.toLowerCase(), password: password },
-        });
-      } else {
-        // Handle errors, such as displaying a message to the user
-        console.error("Failed to send verification email:", data.error);
-        setIsError(true);
-        setErrorText(data.error);
-
-        setTimeout(() => {
-          setIsError(false);
-          setErrorText("");
-        }, 5000);
-      }
-    } catch (error) {
-      console.error(
-        "An error occurred while sending the verification email:",
-        error
+      // If successful, you can redirect or perform other actions
+      router.push("/chat");
+    } catch (rejectedValueOrSerializedError: any) {
+      // Handle the error case
+      setIsError(true);
+      setErrorText(
+        rejectedValueOrSerializedError.message || "Invalid credentials"
       );
+
+      // Hide the error message after some time
+      setTimeout(() => {
+        setIsError(false);
+        setErrorText("");
+      }, 5000);
     }
   };
 

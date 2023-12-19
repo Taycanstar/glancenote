@@ -77,10 +77,17 @@ export const login = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await axios.post(`${url}/login/`, userData);
+      const response = await axios.post(`${url}/api/login/`, userData);
+      if (response.data && response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
+      if (response.data && response.data.user) {
+        localStorage.setItem("userEmail", response.data.user);
+      }
       return response.data;
     } catch (error: any) {
       if (axios.isAxiosError(error) && error.response) {
+        // Ensure the error format here matches what your Django backend sends
         return rejectWithValue(error.response.data);
       }
       return rejectWithValue(error.message);
@@ -90,13 +97,20 @@ export const login = createAsyncThunk(
 
 // Async thunk for user login without a password
 export const loginWithoutPassword = createAsyncThunk(
-  "user/loginWithoutPassword",
+  "api/loginWithoutPassword",
   async (userData: { email: string }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
         `${url}/api/login-without-password/`,
         userData
       );
+
+      if (response.data && response.data.token) {
+        localStorage.setItem("token", response.data.token);
+      }
+      if (response.data && response.data.user) {
+        localStorage.setItem("userEmail", response.data.user);
+      }
       return response.data;
     } catch (error: any) {
       if (axios.isAxiosError(error) && error.response) {
@@ -107,17 +121,43 @@ export const loginWithoutPassword = createAsyncThunk(
   }
 );
 
+export const fetchUserData = async () => {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    return null; // No token found
+  }
+
+  try {
+    const response = await axios.get(`${url}/api/user-data/`, {
+      headers: {
+        Authorization: `Token ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    return null;
+  }
+};
+
 // User slice
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
     // Reducer to handle logout
+    setUser(state, action) {
+      state.data = action.payload;
+      state.isLoggedIn = true;
+    },
     logout(state) {
       state.data = null;
       state.status = "idle";
       state.error = null;
       state.isLoggedIn = false;
+
+      // Remove the token from local storage
+      localStorage.removeItem("token");
     },
   },
   extraReducers: (builder) => {
@@ -152,5 +192,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { logout } = userSlice.actions;
+export const { logout, setUser } = userSlice.actions;
 export default userSlice.reducer;

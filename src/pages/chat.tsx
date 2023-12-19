@@ -1,6 +1,7 @@
 import Layout from "@/src/components/Layout";
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import { FiCompass } from "react-icons/fi";
+import { useSelector } from "react-redux";
 
 type Props = {};
 
@@ -15,6 +16,9 @@ const Chat: React.FC = (props: Props) => {
   const handleTextChange = (event: ChangeEvent<HTMLInputElement>) => {
     setMessage(event.target.value);
   };
+  const userEmail = localStorage.getItem("userEmail");
+
+  console.log(userEmail, "e");
 
   const handleSendMessage = async () => {
     if (message.trim()) {
@@ -31,7 +35,7 @@ const Chat: React.FC = (props: Props) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ prompt: message }),
+          body: JSON.stringify({ prompt: message, email: userEmail }),
         });
 
         const data = await response.json();
@@ -94,6 +98,7 @@ const Chat: React.FC = (props: Props) => {
                 display: "flex",
                 alignItems: "center", // Ensure vertical alignment of items in flex container
                 padding: "5px",
+                userSelect: "text",
               }}
             >
               {msg.sender === "ai" && (
