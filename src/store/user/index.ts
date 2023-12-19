@@ -20,27 +20,6 @@ const initialState: UserState = {
   isLoggedIn: false,
 };
 const url = "http://127.0.0.1:8000";
-// Async thunk for user registration
-export const signup = createAsyncThunk(
-  "user/signup",
-  async (
-    userData: {
-      email: string;
-      password: string;
-    },
-    { rejectWithValue }
-  ) => {
-    try {
-      const response = await axios.post(`${url}/signup`, userData);
-      return response.data;
-    } catch (error: any) {
-      if (axios.isAxiosError(error) && error.response) {
-        return rejectWithValue(error.response.data);
-      }
-      return rejectWithValue(error.message);
-    }
-  }
-);
 
 export const addInfo = createAsyncThunk(
   "user/add-info",
@@ -49,14 +28,13 @@ export const addInfo = createAsyncThunk(
       email: string;
       firstName?: string;
       lastName?: string;
-      organization?: string;
-      birthday?: string;
+      studentId: string;
       phoneNumber: string;
     },
     { rejectWithValue }
   ) => {
     try {
-      const response = await axios.put(`${url}/add-info/`, userData);
+      const response = await axios.put(`${url}/api/add-parent-info/`, userData);
       return response.data;
     } catch (error: any) {
       if (axios.isAxiosError(error) && error.response) {
@@ -68,7 +46,7 @@ export const addInfo = createAsyncThunk(
 );
 
 export const confirmEmail = createAsyncThunk(
-  "user/confirm-email",
+  "user/confirm-parent-email",
   async (
     userData: {
       confirmationToken: string;
@@ -77,7 +55,10 @@ export const confirmEmail = createAsyncThunk(
     { rejectWithValue }
   ) => {
     try {
-      const response = await axios.post(`${url}/confirm-email/`, userData);
+      const response = await axios.post(
+        `${url}/confirm-parent-email/`,
+        userData
+      );
       return response.data;
     } catch (error: any) {
       if (axios.isAxiosError(error) && error.response) {
@@ -113,7 +94,7 @@ export const loginWithoutPassword = createAsyncThunk(
   async (userData: { email: string }, { rejectWithValue }) => {
     try {
       const response = await axios.post(
-        `${url}/login-without-password/`,
+        `${url}/api/login-without-password/`,
         userData
       );
       return response.data;
@@ -141,19 +122,7 @@ const userSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      .addCase(signup.pending, (state) => {
-        state.status = "loading";
-      })
-      .addCase(signup.fulfilled, (state, action: PayloadAction<any>) => {
-        state.status = "success";
-        state.data = action.payload;
-        state.isLoggedIn = true;
-        state.error = null;
-      })
-      .addCase(signup.rejected, (state, action) => {
-        state.status = "error";
-        state.error = action.payload as string;
-      })
+
       .addCase(login.pending, (state) => {
         state.status = "loading";
       })

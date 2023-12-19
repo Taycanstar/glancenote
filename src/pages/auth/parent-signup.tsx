@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 import LogoLayout from "@/src/components/LogoLayout";
 import { useRouter } from "next/router";
@@ -6,7 +5,7 @@ import { FiEyeOff, FiEye } from "react-icons/fi";
 import "@/src/styles/tailwind.css";
 import { Layout as DefaultLayout } from "@/src/components/Layout";
 
-const Login: React.FC & { Layout?: React.ComponentType<any> } = () => {
+const Signup: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const router = useRouter();
@@ -19,7 +18,7 @@ const Login: React.FC & { Layout?: React.ComponentType<any> } = () => {
     console.log("Submitting form", { email, password });
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/signup/", {
+      const response = await fetch("http://127.0.0.1:8000/api/parent-signup/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -27,7 +26,9 @@ const Login: React.FC & { Layout?: React.ComponentType<any> } = () => {
         },
         body: JSON.stringify({
           email: email,
-          password: password,
+          password1: password,
+          password2: password,
+
           // Don't send confirmationToken from client-side
         }),
       });
@@ -84,7 +85,7 @@ const Login: React.FC & { Layout?: React.ComponentType<any> } = () => {
             <div className="flex items-center justify-center space-x-3"></div>
 
             <h2 className="mt-1 text-2xl font-bold leading-9 tracking-tight text-gray-900">
-              Happy to have you back
+              Create your account
             </h2>
           </div>
 
@@ -171,13 +172,13 @@ const Login: React.FC & { Layout?: React.ComponentType<any> } = () => {
                 htmlFor="remember-me"
                 className="block text-sm text-gray-900"
               >
-                Don't have an account?
+                Already have an account?
               </label>
               <a
-                href="/auth/signup"
+                href="/auth/login"
                 className="text-blue-500 mx-2 text-sm hover:text-blue-400"
               >
-                Signup
+                Log in
               </a>
             </div>
           </form>
@@ -187,5 +188,5 @@ const Login: React.FC & { Layout?: React.ComponentType<any> } = () => {
   );
 };
 
-Login.Layout = LogoLayout;
-export default Login;
+Signup.Layout = LogoLayout;
+export default Signup;
