@@ -8,6 +8,7 @@ import { unwrapResult } from "@reduxjs/toolkit";
 import { LOCAL } from "@/src/utils/constants";
 import CommonLayout from "@/src/components/CommonLayout";
 import { FiLoader } from "react-icons/fi";
+import Link from "next/link";
 
 const Info: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const router = useRouter();
@@ -253,12 +254,13 @@ const Info: React.FC & { Layout?: React.ComponentType<any> } = () => {
               >
                 Already have an account?
               </label>
-              <a
+
+              <Link
                 href="/auth/login"
                 className="text-blue-500 mx-2 text-sm hover:text-blue-400"
               >
                 Log in
-              </a>
+              </Link>
             </div>
           </form>
         </div>

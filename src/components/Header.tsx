@@ -7,6 +7,9 @@ import { Button } from "@/src/components/Button";
 import { Container } from "@/src/components/Container";
 import { NavLink } from "@/src/components/NavLink";
 import { Bars3Icon } from "@heroicons/react/24/solid";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store";
+import { logout } from "../store/user";
 
 interface MobileNavLinkProps {
   href: string;
@@ -166,6 +169,13 @@ function MobileNavigation() {
 
 export const Header = () => {
   const [isSmallScreen, setIsSmallScreen] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+
+  const handleLogout = (event: React.MouseEvent) => {
+    event.preventDefault(); // Prevent default link behavior
+    console.log("Logging out");
+    dispatch(logout());
+  };
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -218,7 +228,10 @@ export const Header = () => {
                     {options.map((option: any, index: any) => (
                       <Menu.Item key={index}>
                         {({ active }) => (
-                          <Link href={option.href}>
+                          <Link
+                            href={option.href}
+                            // onClick={option.onClick}
+                          >
                             <span
                               className={`${
                                 active ? "underline text-white" : "text-white"
@@ -230,6 +243,18 @@ export const Header = () => {
                         )}
                       </Menu.Item>
                     ))}
+                    <Menu.Item>
+                      {({ active }) => (
+                        <button
+                          onClick={handleLogout}
+                          className={`${
+                            active ? "underline text-white" : "text-white"
+                          } group flex rounded-md items-center w-full px-2 py-2 text-sm`}
+                        >
+                          Log out
+                        </button>
+                      )}
+                    </Menu.Item>
                   </div>
                 </Menu.Items>
               </Transition>

@@ -122,7 +122,7 @@ const Chat: React.FC<Props> = () => {
       router.push("/auth/login");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loggedIn]);
 
   return (
     <Layout>
