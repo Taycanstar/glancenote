@@ -9,6 +9,7 @@ import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/src/store";
 import { login } from "@/src/store/user";
 import { unwrapResult } from "@reduxjs/toolkit";
+import { FiLoader } from "react-icons/fi";
 
 const Login: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const [email, setEmail] = useState<string>("");
@@ -18,15 +19,18 @@ const Login: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const [isError, setIsError] = useState<boolean>(false);
   const [errorText, setErrorText] = useState<string>("");
   const dispatch = useDispatch<AppDispatch>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    setIsLoading(true);
     try {
       const actionResult = await dispatch(login({ email, password }));
       unwrapResult(actionResult);
 
       // If successful, you can redirect or perform other actions
       router.push("/chat");
+      setIsLoading(false);
     } catch (rejectedValueOrSerializedError: any) {
       // Handle the error case
       setIsError(true);
@@ -35,6 +39,7 @@ const Login: React.FC & { Layout?: React.ComponentType<any> } = () => {
       );
 
       // Hide the error message after some time
+      setIsLoading(false);
       setTimeout(() => {
         setIsError(false);
         setErrorText("");
@@ -144,7 +149,11 @@ const Login: React.FC & { Layout?: React.ComponentType<any> } = () => {
                 }`}
                 disabled={!isPasswordValid()}
               >
-                Continue
+                {isLoading ? (
+                  <FiLoader className="animate-spin h-5 w-5 mr-3" /> // Loading spinner icon
+                ) : (
+                  "Continue"
+                )}
               </button>
             </div>
             <div className="flex items-center justify-center">

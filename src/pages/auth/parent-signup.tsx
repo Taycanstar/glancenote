@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { FiEyeOff, FiEye } from "react-icons/fi";
 import "@/src/styles/tailwind.css";
 import { Layout as DefaultLayout } from "@/src/components/Layout";
+import { FiLoader } from "react-icons/fi";
 
 const Signup: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const [email, setEmail] = useState<string>("");
@@ -12,10 +13,11 @@ const Signup: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
   const [errorText, setErrorText] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault(); // Prevent the default form submission behavior.
-    console.log("Submitting form", { email, password });
+    setIsLoading(true);
 
     try {
       const response = await fetch("http://127.0.0.1:8000/api/parent-signup/", {
@@ -38,7 +40,7 @@ const Signup: React.FC & { Layout?: React.ComponentType<any> } = () => {
       // Check if the request was successful
       if (response.ok) {
         console.log("Verification email sent successfully:", data.message);
-
+        setIsLoading(false);
         router.push({
           pathname: "/onboarding/verify-email",
           query: { email: email.toLowerCase(), password: password },
@@ -49,6 +51,7 @@ const Signup: React.FC & { Layout?: React.ComponentType<any> } = () => {
         setIsError(true);
         setErrorText(data.error);
 
+        setIsLoading(false);
         setTimeout(() => {
           setIsError(false);
           setErrorText("");
@@ -164,7 +167,11 @@ const Signup: React.FC & { Layout?: React.ComponentType<any> } = () => {
                 }`}
                 disabled={!isPasswordValid()}
               >
-                Continue
+                {isLoading ? (
+                  <FiLoader className="animate-spin h-5 w-5 mr-3" /> // Loading spinner icon
+                ) : (
+                  "Continue"
+                )}
               </button>
             </div>
             <div className="flex items-center justify-center">

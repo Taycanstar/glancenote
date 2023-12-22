@@ -1,7 +1,15 @@
+import React, {
+  useState,
+  useEffect,
+  ChangeEvent,
+  useRef,
+  KeyboardEvent,
+} from "react";
+import { FiArrowDown, FiCompass } from "react-icons/fi";
 import Layout from "@/src/components/Layout";
-import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
-import { FiCompass } from "react-icons/fi";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { GetServerSideProps } from "next";
+import { useRouter } from "next/router";
 
 type Props = {};
 
@@ -10,63 +18,111 @@ type Message = {
   sender: "user" | "ai";
 };
 
-const Chat: React.FC = (props: Props) => {
+const Chat: React.FC<Props> = () => {
+  const router = useRouter();
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [showScrollToBottom, setShowScrollToBottom] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const loggedIn = useSelector((state: any) => state.user.isLoggedIn);
+
+  console.log(loggedIn, "ssss");
+
+  const userEmail =
+    typeof window !== "undefined" ? localStorage.getItem("userEmail") : null;
+
+  const handleScroll = () => {
+    if (messagesContainerRef.current) {
+      const isAtBottom =
+        messagesContainerRef.current.scrollHeight -
+          messagesContainerRef.current.scrollTop <=
+        messagesContainerRef.current.clientHeight + 50; // Adjust the threshold as needed
+      setShowScrollToBottom(!isAtBottom);
+    }
+  };
+
+  const scrollToBottom = () => {
+    messagesContainerRef.current?.scrollTo({
+      top: messagesContainerRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  };
+
+  const handleKeyPress = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      handleSendMessage();
+    }
+  };
+
   const handleTextChange = (event: ChangeEvent<HTMLInputElement>) => {
     setMessage(event.target.value);
   };
-  const userEmail = localStorage.getItem("userEmail");
-
-  console.log(userEmail, "e");
 
   const handleSendMessage = async () => {
     if (message.trim()) {
-      // Add the user's message to the chat
-      setMessages((messages) => [
-        ...messages,
+      setIsLoading(true);
+      setMessages((prevMessages) => [
+        ...prevMessages,
         { text: message, sender: "user" },
       ]);
+      setMessage("");
 
       try {
-        // Send the message to the Django backend
         const response = await fetch("http://127.0.0.1:8000/api/openai-chat/", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ prompt: message, email: userEmail }),
         });
 
         const data = await response.json();
 
-        // Add the AI's response to the chat
+        setIsLoading(false);
         if (data && data.response) {
-          setMessages((messages) => [
-            ...messages,
+          setMessages((prevMessages) => [
+            ...prevMessages,
             { text: data.response, sender: "ai" },
           ]);
-
-          console.log("Received response:", data);
         } else {
-          setMessages((messages) => [
-            ...messages,
+          setMessages((prevMessages) => [
+            ...prevMessages,
             { text: "No response from AI.", sender: "ai" },
           ]);
         }
       } catch (error) {
         console.error("Error:", error);
-        console.error("Error:", error);
-        setMessages((messages) => [
-          ...messages,
+        setMessages((prevMessages) => [
+          ...prevMessages,
           { text: "Error connecting to the server.", sender: "ai" },
         ]);
+        setIsLoading(false);
       }
-
-      // Clear the input field
-      setMessage("");
     }
   };
+
+  useEffect(() => {
+    // Scroll logic
+    const messagesContainer = messagesContainerRef.current;
+    if (messagesContainer) {
+      messagesContainer.addEventListener("scroll", handleScroll);
+      return () =>
+        messagesContainer.removeEventListener("scroll", handleScroll);
+    }
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom(); // Scroll to bottom when new messages are added
+  }, [messages]);
+
+  useEffect(() => {
+    // Check if token exists
+    if (!loggedIn) {
+      // If token doesn't exist, redirect to login
+      router.push("/auth/login");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <Layout>
@@ -76,18 +132,15 @@ const Chat: React.FC = (props: Props) => {
           position: "relative",
           height: "100vh",
           padding: "20px",
-
           paddingTop: "5rem",
         }}
       >
-        {/* Chat messages area */}
         <div
+          ref={messagesContainerRef}
           style={{
             overflowY: "auto",
-            height: "calc(100% - 80px)", // Adjusted for header and input area
+            height: "calc(100% - 80px)",
             padding: "10px",
-            paddingLeft: "10px",
-            paddingRight: "10px",
             borderRadius: "15px",
           }}
         >
@@ -96,20 +149,22 @@ const Chat: React.FC = (props: Props) => {
               key={index}
               style={{
                 display: "flex",
-                alignItems: "center", // Ensure vertical alignment of items in flex container
+                alignItems: "flex-start",
                 padding: "5px",
                 userSelect: "text",
               }}
             >
               {msg.sender === "ai" && (
-                <FiCompass size={24} style={{ marginRight: "10px" }} /> // Increased size and added margin
+                <FiCompass
+                  size={24}
+                  style={{ marginRight: "10px", marginTop: "15px" }}
+                />
               )}
               {msg.sender === "user" && (
                 <div
                   style={{ width: "30px", height: "30px", marginRight: "10px" }}
                 />
-              )}{" "}
-              {/* Placeholder for alignment */}
+              )}
               <span
                 style={{
                   color: "black",
@@ -123,9 +178,47 @@ const Chat: React.FC = (props: Props) => {
               </span>
             </div>
           ))}
+
+          {showScrollToBottom && (
+            <button
+              onClick={scrollToBottom}
+              style={{
+                position: "absolute",
+                right: "50%",
+                bottom: "125px",
+                transform: "translateX(50%)",
+                backgroundColor: "white",
+                border: "0.5px solid lightgray",
+                borderRadius: "50%",
+                cursor: "pointer",
+                padding: "3px",
+              }}
+            >
+              <FiArrowDown color="black" size={25} />
+            </button>
+          )}
+
+          {isLoading && (
+            <div
+              style={{
+                padding: "10px",
+                paddingLeft: "55px",
+                paddingBottom: "20px",
+              }}
+            >
+              <span
+                style={{
+                  color: "black",
+                  fontWeight: "600",
+                  fontSize: "1.2rem",
+                }}
+              >
+                Glancenote is thinking...
+              </span>
+            </div>
+          )}
         </div>
 
-        {/* Chat input area */}
         <div
           style={{
             position: "absolute",
@@ -145,6 +238,7 @@ const Chat: React.FC = (props: Props) => {
           <input
             type="text"
             value={message}
+            onKeyDown={handleKeyPress}
             onChange={handleTextChange}
             placeholder="Type a message..."
             style={{
@@ -164,7 +258,6 @@ const Chat: React.FC = (props: Props) => {
               border: "none",
               borderRadius: "12px",
               backgroundColor: "black",
-              //   backgroundColor: "#007bff",
               color: "white",
               cursor: "pointer",
             }}

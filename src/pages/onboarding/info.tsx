@@ -7,6 +7,7 @@ import { addInfo } from "../../store/user";
 import { unwrapResult } from "@reduxjs/toolkit";
 import { LOCAL } from "@/src/utils/constants";
 import CommonLayout from "@/src/components/CommonLayout";
+import { FiLoader } from "react-icons/fi";
 
 const Info: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const router = useRouter();
@@ -19,6 +20,7 @@ const Info: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const [num, setNum] = useState<string>("");
   const [formError, setFormError] = useState("");
   const [isError, setIsError] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleBdChange = (inputValue: string) => {
     const input = inputValue.replace(/\D/g, ""); // Remove non-digit characters
@@ -49,6 +51,7 @@ const Info: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     // Check if the required fields are filled
+    setIsLoading(true);
     if (
       !firstName.trim() ||
       !lastName.trim() ||
@@ -72,7 +75,7 @@ const Info: React.FC & { Layout?: React.ComponentType<any> } = () => {
           })
         );
         unwrapResult(resultAction);
-
+        setIsLoading(false);
         router.push({
           pathname: "/onboarding/verify-phone",
           query: { email: email, phoneNumber: num },
@@ -82,6 +85,7 @@ const Info: React.FC & { Layout?: React.ComponentType<any> } = () => {
         // Handle error here
         console.error("add info error:", error);
         // Directly use the error message from the backend
+        setIsLoading(false);
         setFormError(error.message || "Invalid phone number");
         setIsError(true);
       }
@@ -235,7 +239,11 @@ const Info: React.FC & { Layout?: React.ComponentType<any> } = () => {
                 type="submit"
                 className="hover:bg-gray-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-100 flex w-full justify-center rounded-md bg-gray-200 px-3 py-3.5 text-lg  leading-6 text-black"
               >
-                Continue
+                {isLoading ? (
+                  <FiLoader className="animate-spin h-5 w-5 mr-3" /> // Loading spinner icon
+                ) : (
+                  "Continue"
+                )}
               </button>
             </div>
             <div className="flex items-center justify-center">
