@@ -268,7 +268,8 @@ export const Header = () => {
   return (
     <header className="py-6 absolute w-full z-10">
       <Container className="px-2 lg:px-6">
-        <nav className="relative z-50 flex justify-between items-center">
+        <nav className="relative z-50 flex items-center justify-between">
+          {/* Logo */}
           <Link href="#" aria-label="Home">
             <div className="inline-flex items-center cursor-pointer">
               <img
@@ -282,16 +283,23 @@ export const Header = () => {
             </div>
           </Link>
 
-          <div className="hidden md:flex md:gap-x-6">
-            <NavLink href="/discover" color="text-black">
-              Discover
-            </NavLink>
-            <NavLink href="/assistant" color="text-black">
-              Assistant
-            </NavLink>
+          {/* Spacer to balance the logo */}
+          <div className="flex-grow"></div>
+
+          {/* Centered Navigation Links */}
+          <div className="absolute left-1/2 transform -translate-x-1/2">
+            <div className="flex gap-x-6">
+              <NavLink href="/discover" color="text-black">
+                Discover
+              </NavLink>
+              <NavLink href="/assistant" color="text-black">
+                Assistant
+              </NavLink>
+            </div>
           </div>
 
-          <div className="flex items-center gap-x-5 md:gap-x-8">
+          {/* Dropdown Menu */}
+          <div>
             <Dropdown
               title={<Bars3Icon className="h-6 w-6 text-black" />}
               options={dropdownOptions}

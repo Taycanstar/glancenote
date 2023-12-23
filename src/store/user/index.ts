@@ -6,18 +6,21 @@ interface UserState {
     email: string;
     firstName?: string;
     lastName?: string;
-    organizationName?: string;
   } | null;
   status: "idle" | "loading" | "success" | "error";
   isLoggedIn: boolean;
   error?: string | null;
 }
 
+const isBrowser = typeof window !== "undefined";
+const token = isBrowser ? localStorage.getItem("token") : null;
+const userEmail = isBrowser ? localStorage.getItem("userEmail") : null;
+
 const initialState: UserState = {
-  data: null,
+  data: token && userEmail ? { email: userEmail } : null,
   status: "idle",
   error: null,
-  isLoggedIn: false,
+  isLoggedIn: !!token,
 };
 const url = "http://127.0.0.1:8000";
 

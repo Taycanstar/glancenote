@@ -5,6 +5,8 @@ import { FiEyeOff, FiEye } from "react-icons/fi";
 import "@/src/styles/tailwind.css";
 import { Layout as DefaultLayout } from "@/src/components/Layout";
 import { FiLoader } from "react-icons/fi";
+import Link from "next/link";
+import { useSelector } from "react-redux";
 
 const Signup: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const [email, setEmail] = useState<string>("");
@@ -14,6 +16,7 @@ const Signup: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const [isError, setIsError] = useState<boolean>(false);
   const [errorText, setErrorText] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const loggedIn = useSelector((state: any) => state.user.isLoggedIn);
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault(); // Prevent the default form submission behavior.
@@ -79,6 +82,15 @@ const Signup: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const handleTogglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+
+  useEffect(() => {
+    // Check if token exists
+    if (loggedIn) {
+      // If token doesn't exist, redirect to login
+      router.push("/chat");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loggedIn]);
 
   return (
     <LogoLayout>
@@ -181,12 +193,12 @@ const Signup: React.FC & { Layout?: React.ComponentType<any> } = () => {
               >
                 Already have an account?
               </label>
-              <a
+              <Link
                 href="/auth/login"
                 className="text-blue-500 mx-2 text-sm hover:text-blue-400"
               >
                 Log in
-              </a>
+              </Link>
             </div>
           </form>
         </div>

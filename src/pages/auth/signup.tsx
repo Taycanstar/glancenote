@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import { FiEyeOff, FiEye } from "react-icons/fi";
 import "@/src/styles/tailwind.css";
 import { Layout as DefaultLayout } from "@/src/components/Layout";
+import { useSelector } from "react-redux";
 
 const cards = [
   {
@@ -35,6 +36,16 @@ const Signup: React.FC & { Layout?: React.ComponentType<any> } = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
   const [errorText, setErrorText] = useState<string>("");
+  const loggedIn = useSelector((state: any) => state.user.isLoggedIn);
+
+  useEffect(() => {
+    // Check if token exists
+    if (loggedIn) {
+      // If token doesn't exist, redirect to login
+      router.push("/chat");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loggedIn]);
 
   return (
     <LogoLayout>
