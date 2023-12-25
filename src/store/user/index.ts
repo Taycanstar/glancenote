@@ -48,6 +48,33 @@ export const addInfo = createAsyncThunk(
   }
 );
 
+export const addTeacherInfo = createAsyncThunk(
+  "user/add-info-teacher",
+  async (
+    userData: {
+      email: string;
+      firstName?: string;
+      lastName?: string;
+      birthday?: string;
+      phoneNumber: string;
+    },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await axios.put(
+        `${url}/api/add-teacher-info/`,
+        userData
+      );
+      return response.data;
+    } catch (error: any) {
+      if (axios.isAxiosError(error) && error.response) {
+        return rejectWithValue(error.response.data);
+      }
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 export const confirmEmail = createAsyncThunk(
   "user/confirm-parent-email",
   async (
