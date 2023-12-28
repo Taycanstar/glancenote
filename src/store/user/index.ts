@@ -10,17 +10,20 @@ interface UserState {
   status: "idle" | "loading" | "success" | "error";
   isLoggedIn: boolean;
   error?: string | null;
+  userType: string | null;
 }
 
 const isBrowser = typeof window !== "undefined";
 const token = isBrowser ? localStorage.getItem("token") : null;
 const userEmail = isBrowser ? localStorage.getItem("userEmail") : null;
+const uType = isBrowser ? localStorage.getItem("userType") : null;
 
 const initialState: UserState = {
   data: token && userEmail ? { email: userEmail } : null,
   status: "idle",
   error: null,
   isLoggedIn: !!token,
+  userType: token && uType ? uType : null,
 };
 const url = "http://127.0.0.1:8000";
 
@@ -114,6 +117,9 @@ export const login = createAsyncThunk(
       if (response.data && response.data.user) {
         localStorage.setItem("userEmail", response.data.user);
       }
+      if (response.data && response.data.userType) {
+        localStorage.setItem("userType", response.data.userType);
+      }
       return response.data;
     } catch (error: any) {
       if (axios.isAxiosError(error) && error.response) {
@@ -201,6 +207,7 @@ const userSlice = createSlice({
         state.data = action.payload;
         state.isLoggedIn = true; // Set the logged-in status to true
         state.error = null;
+        state.userType = action.payload.userType;
       })
       .addCase(login.rejected, (state, action) => {
         state.status = "error";
@@ -214,6 +221,7 @@ const userSlice = createSlice({
         state.data = action.payload;
         state.isLoggedIn = true; // Set the logged-in status to true
         state.error = null;
+        state.userType = action.payload.userType;
       })
       .addCase(loginWithoutPassword.rejected, (state, action) => {
         state.status = "error";

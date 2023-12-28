@@ -19,12 +19,14 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
   console.log(userType, "userType");
   return (
-    <div>
+    <div className="flex flex-col min-h-screen">
       {isClient &&
         // Render your component or its part that depends on client-side data
         (userType === "Teacher" ? <TeacherHeader /> : <Header />)}
 
-      <main>{children}</main>
+      <main className="flex flex-1 items-center justify-center">
+        {children}
+      </main>
     </div>
   );
 };
